@@ -1,6 +1,8 @@
 package com.study.datajpa.repository;
 
+import com.study.datajpa.dto.MemberDto;
 import com.study.datajpa.entity.Member;
+import com.study.datajpa.entity.Team;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -18,11 +21,15 @@ import static org.junit.jupiter.api.Assertions.*;
 @Rollback(false)
 class MemberRepositoryTest {
 
-    @Autowired MemberRepository memberRepository;
+    @Autowired
+    MemberRepository memberRepository;
+
+    @Autowired
+    TeamRepository teamRepository;
 
     @Test
     void testMember() {
-        System.out.println("memberRepository = "+memberRepository.getClass());
+        System.out.println("memberRepository = " + memberRepository.getClass());
         Member member = new Member("memberA");
         Member saveMember = memberRepository.save(member);
         Optional<Member> findMember = memberRepository.findById(saveMember.getId());
@@ -74,16 +81,87 @@ class MemberRepositoryTest {
         Assertions.assertThat(result.get(0).getAge()).isEqualTo(20);
         Assertions.assertThat(result.size()).isEqualTo(1);
     }
+
     @Test
     void testNamedQuery() {
         Member m1 = new Member("member1", 10);
         Member m2 = new Member("member2", 10);
         memberRepository.save(m1);
+        memberRepository.save(m2);
 
         List<Member> result = memberRepository.findByUsername("member1");
         Assertions.assertThat(result.get(0).getUsername()).isEqualTo("member1");
         Assertions.assertThat(result.get(0).getAge()).isEqualTo(10);
         Assertions.assertThat(result.size()).isEqualTo(1);
 
+    }
+
+    @Test
+    void testQuery() {
+        Member m1 = new Member("member1", 10);
+        Member m2 = new Member("member2", 10);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> result = memberRepository.findUser("member1", 10);
+        Assertions.assertThat(result.get(0).getUsername()).isEqualTo("member1");
+        Assertions.assertThat(result.get(0).getAge()).isEqualTo(10);
+        Assertions.assertThat(result.size()).isEqualTo(1);
+    }
+
+    @Test
+    void findUsernameList() {
+        Member m1 = new Member("member1", 10);
+        Member m2 = new Member("member2", 10);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<String> result = memberRepository.findUsernameList();
+        for (String s : result) {
+            System.out.println("name = "+s);
+        }
+    }
+
+    @Test
+    void findMemberDto() {
+
+        Team team = new Team("team1");
+        teamRepository.save(team);
+
+        Member m1 = new Member("member1", 10);
+        m1.setTeam(team);
+        memberRepository.save(m1);
+
+        List<MemberDto> memberDto = memberRepository.findMemberDto();
+        for (MemberDto dto : memberDto) {
+            System.out.println("dto = "+dto);
+        }
+    }
+    @Test
+    void findByNames() {
+
+        Member m1 = new Member("member1", 10);
+        Member m2 = new Member("member2", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> members = memberRepository.findByNames(Arrays.asList("member1", "member2"));
+        for (Member m : members) {
+            System.out.println("member = "+m);
+        }
+    }
+    @Test
+    void returnType() {
+
+        Member m1 = new Member("member1", 10);
+        Member m2 = new Member("member2", 20);
+        memberRepository.save(m1);
+        memberRepository.save(m2);
+
+        List<Member> member1 = memberRepository.findListByUsername("member1");
+        Member member2 = memberRepository.findMemberByUsername("member1");
+        Optional<Member> member3 = memberRepository.findOptionalByUsername("member1");
+
+        System.out.println(member1.get(0).getUsername()+" "+member2.getUsername()+" "+member3.get().getUsername());
     }
 }
