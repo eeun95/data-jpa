@@ -7,6 +7,9 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -158,10 +161,42 @@ class MemberRepositoryTest {
         memberRepository.save(m1);
         memberRepository.save(m2);
 
+        // 컬렉션은 없는 결과일 경우 빈 컬렉션을 반환(!= null)
         List<Member> member1 = memberRepository.findListByUsername("member1");
+        // 단건 조회가 없는 결과일 경우 null
         Member member2 = memberRepository.findMemberByUsername("member1");
         Optional<Member> member3 = memberRepository.findOptionalByUsername("member1");
 
         System.out.println(member1.get(0).getUsername()+" "+member2.getUsername()+" "+member3.get().getUsername());
+    }
+
+    @Test
+    void paging() {
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 10));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 10));
+        memberRepository.save(new Member("member5", 10));
+
+        int age = 10;
+
+        // 구현체
+        PageRequest pageRequest = PageRequest.of(0, 3, Sort.Direction.DESC, "username");
+
+        // 스프링 데이타 JPA가 반환타입이 Page인 것을 보고 카운트 쿼리를 날림
+        Page<Member> page = memberRepository.findByAge(age, pageRequest);
+        List<Member> content = page.getContent();
+        for (Member member : content) {
+            System.out.println("member = "+member);
+        }
+        // totalElement == totalCount
+        System.out.println(page.getTotalElements());
+
+        Assertions.assertThat(content.size()).isEqualTo(3);
+        Assertions.assertThat(page.getTotalElements()).isEqualTo(4);
+        Assertions.assertThat(page.getNumber()).isEqualTo(0);
+        Assertions.assertThat(page.getTotalPages()).isEqualTo(2);
+        Assertions.assertThat(page.isFirst()).isTrue();
+        Assertions.assertThat(page.hasNext()).isTrue();
     }
 }

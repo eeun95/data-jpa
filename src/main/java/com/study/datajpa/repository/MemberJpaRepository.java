@@ -55,4 +55,27 @@ public class MemberJpaRepository {
                 .setParameter("username", username)
                 .getResultList();
     }
+
+    public List<Member> findByPage(int age, int offset, int limit) {
+        return em.createQuery("select m from Member m where m.age = :age order by m.username desc")
+                .setParameter("age", age)
+                .setFirstResult(offset)
+                .setMaxResults(limit)
+                .getResultList();
+    }
+
+    // 두 번째 파라미터에 반환 타입 지정 → TypeQuery 반환
+    // 두 번째 파라미터에 반환 타입 지정 x → Query 반환
+
+    /*Query 객체
+    SELECT 절에서 여러 엔티티나 컬럼을 선택 시 반환 타입이 명확하지 않으므로 사용
+    조회 대상의 갯수에 따라 반환 타입이 달라짐
+    둘 이상 : Object[]
+    하나 : Object
+     */
+    public long totalCount(int age) {
+        return em.createQuery("select count(m) from Member m where m.age = :age", Long.class)
+                .setParameter("age", age)
+                .getSingleResult();
+    }
 }

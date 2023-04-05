@@ -2,6 +2,8 @@ package com.study.datajpa.repository;
 
 import com.study.datajpa.dto.MemberDto;
 import com.study.datajpa.entity.Member;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -47,4 +49,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     List<Member> findListByUsername(String username);
     Member findMemberByUsername(String username);
     Optional<Member> findOptionalByUsername(String username);
+
+    // Sort: 정렬기능
+    // Pagenable: 페이징 기능
+    // Page: 추가 count 쿼리 결과를 포함하는 페이징 (totalCount 쿼리가 같이 나감)
+    // Slice: 추가 count 쿼리 없이 다음 페이지만 확인 가능(내부적으로 limit+1 조회) ex. 더보기 ...
+
+    Page<Member> findByAge(int age, Pageable pageable);
+
 }
