@@ -4,6 +4,7 @@ import com.study.datajpa.dto.MemberDto;
 import com.study.datajpa.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -55,6 +56,11 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
     // Page: 추가 count 쿼리 결과를 포함하는 페이징 (totalCount 쿼리가 같이 나감)
     // Slice: 추가 count 쿼리 없이 다음 페이지만 확인 가능(내부적으로 limit+1 조회) ex. 더보기 ...
 
+    // 토탈 카운트가 성능이 느려지기 때문에 카운트 쿼리를 분리 하기도 함!
+    // 카운트 같은 경우 join 이나 복잡한 연산이 필요없는데 Page를 사용하면 카운트 시에도 불필요한 연산이 함께 쓰여서 성능이 저하됨
+    @Query(value = "select m from Member m left join m.team t",
+            countQuery = "select count(m.username) from Member m")
     Page<Member> findByAge(int age, Pageable pageable);
+    // 단순하게 3건만 조회하고 싶을 땐? findTop3ByAge(int age)
 
 }

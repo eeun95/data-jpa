@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
@@ -184,19 +185,26 @@ class MemberRepositoryTest {
         PageRequest pageRequest = PageRequest.of(0, 3, Sort.Direction.DESC, "username");
 
         // 스프링 데이타 JPA가 반환타입이 Page인 것을 보고 카운트 쿼리를 날림
-        Page<Member> page = memberRepository.findByAge(age, pageRequest);
+        // Slice 는 전체 count를 날리지 않고 +1개만 요청
+
+        Slice<Member> page = memberRepository.findByAge(age, pageRequest);
+        // DTO로 변환해서 넘겨야함 그대로 반환하면 혼난다
+        // 컨텐츠가 json으로 반환됨 편리!
+        Slice<MemberDto> memberDtos = page.map(m -> new MemberDto(m.getId(), m.getUsername(), null));
+
         List<Member> content = page.getContent();
         for (Member member : content) {
             System.out.println("member = "+member);
         }
         // totalElement == totalCount
-        System.out.println(page.getTotalElements());
+        //System.out.println(page.getTotalElements());
 
         Assertions.assertThat(content.size()).isEqualTo(3);
-        Assertions.assertThat(page.getTotalElements()).isEqualTo(4);
+        //Assertions.assertThat(page.getTotalElements()).isEqualTo(4);
         Assertions.assertThat(page.getNumber()).isEqualTo(0);
-        Assertions.assertThat(page.getTotalPages()).isEqualTo(2);
+        //Assertions.assertThat(page.getTotalPages()).isEqualTo(2);
         Assertions.assertThat(page.isFirst()).isTrue();
         Assertions.assertThat(page.hasNext()).isTrue();
+
     }
 }
