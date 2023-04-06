@@ -14,6 +14,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -30,6 +32,10 @@ class MemberRepositoryTest {
 
     @Autowired
     TeamRepository teamRepository;
+
+    // 같은 트랜잭션 안에서는 같은 엔티티 매니저를 사용
+    @PersistenceContext
+    EntityManager em;
 
     @Test
     void testMember() {
@@ -206,5 +212,34 @@ class MemberRepositoryTest {
         Assertions.assertThat(page.isFirst()).isTrue();
         Assertions.assertThat(page.hasNext()).isTrue();
 
+    }
+
+    @Test
+    void bulkUpdate() {
+
+        // given
+        memberRepository.save(new Member("member1", 10));
+        memberRepository.save(new Member("member2", 19));
+        memberRepository.save(new Member("member3", 20));
+        memberRepository.save(new Member("member4", 21));
+        memberRepository.save(new Member("member5", 40));
+
+        // 영속성 컨텍스트에만 들어있고 DB 반영이 안된 상태
+        // 이때 벌크연산을 때려버리면 문제가 생길 수 있다
+
+        // JPQL 사용하면 무조건 디비에 적용 이후 실행됨
+
+        // when
+        int resultCount = memberRepository.bulkAgePlus(20);
+        //em.flush();
+        //em.clear();
+
+        // 벌크 연산을 날렸지만 41살이 아닌 40살로 남아있음 -> 벌크연산의 조심해야 할 점!
+        // 벌크 연산은 영속성 컨텍스트를 무시해버림, 벌크 연산 이후에는 영속성 컨텍스트를 날려야함 (이후 로직에 문제가 생길 수 있으므로)
+        List<Member> result = memberRepository.findByUsername("member5");
+        System.out.println("member = "+result.get(0));
+
+        // then
+        Assertions.assertThat(resultCount).isEqualTo(3);
     }
 }

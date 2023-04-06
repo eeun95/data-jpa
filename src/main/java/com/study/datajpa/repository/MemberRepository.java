@@ -6,6 +6,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Slice;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -62,5 +63,12 @@ public interface MemberRepository extends JpaRepository<Member, Long> {
             countQuery = "select count(m.username) from Member m")
     Page<Member> findByAge(int age, Pageable pageable);
     // 단순하게 3건만 조회하고 싶을 땐? findTop3ByAge(int age)
+
+    // executeUpdate 역할, 없으면 InvalidDataAccess 에러
+    // JPA에선 벌크연산을 쓸 때 주의해야함
+    // em.clear() 사용 대신 옵션에 넣어줘도 됨
+    @Modifying(clearAutomatically = true)
+    @Query("update Member m set m.age = m.age+1 where m.age >= :age")
+    int bulkAgePlus(@Param("age") int age);
 
 }
