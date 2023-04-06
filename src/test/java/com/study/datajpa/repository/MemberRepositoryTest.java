@@ -234,6 +234,9 @@ class MemberRepositoryTest {
         //em.flush();
         //em.clear();
 
+        // 벌크연산과 jdbc 직접 날리는것은 jpa가 인식을 못함 -> 영속성 컨텍스트와 맞지 않음
+        // 꼭 flush/clear 해줘야함
+
         // 벌크 연산을 날렸지만 41살이 아닌 40살로 남아있음 -> 벌크연산의 조심해야 할 점!
         // 벌크 연산은 영속성 컨텍스트를 무시해버림, 벌크 연산 이후에는 영속성 컨텍스트를 날려야함 (이후 로직에 문제가 생길 수 있으므로)
         List<Member> result = memberRepository.findByUsername("member5");
