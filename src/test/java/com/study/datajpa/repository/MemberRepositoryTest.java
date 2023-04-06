@@ -273,4 +273,30 @@ class MemberRepositoryTest {
             System.out.println("member.team = "+member.getTeam().getName());
         }
     }
+
+    @Test
+    void queryHint() {
+        Member member1 = new Member("member1", 10);
+        memberRepository.save(member1);
+        em.flush();
+        em.clear();
+
+        Member findMember = memberRepository.findReadOnlyByUsername("member1");
+        // 가지고 오는 순간 원본과 조회데이터를 만들어둔다
+        findMember.setUsername("member2");
+
+        // 1. 원본데이터 2. 수정데이터 -> 2개의 데이터를 가지는 비용이 듦
+
+        em.flush();
+    }
+    @Test
+    void lock() {
+        Member member1 = new Member("member1", 10);
+        memberRepository.save(member1);
+        em.flush();
+        em.clear();
+
+        List<Member> findMember = memberRepository.findLockByUsername("member1");
+
+    }
 }
