@@ -304,4 +304,23 @@ class MemberRepositoryTest {
     void callCustom() {
         List<Member> result = memberRepository.findMemberCustom();
     }
+
+    @Test
+    void baseEntity() throws InterruptedException {
+
+        Member member = new Member("member1", 10);
+        memberRepository.save(member);
+
+        Thread.sleep(100);
+        member.setUsername("member2");
+        em.flush();
+        em.clear();
+
+        Member findMember = memberRepository.findById(member.getId()).get();
+        System.out.println("findMember.createdDate = " + findMember.getCreatedDate());
+        System.out.println("findMember.updatedDate = " + findMember.getLastModifiedDate());
+        System.out.println("findMember.createdBy = " + findMember.getCreatedBy());
+        System.out.println("findMember.updatedBy = " + findMember.getLastModifiedBy());
+
+    }
 }

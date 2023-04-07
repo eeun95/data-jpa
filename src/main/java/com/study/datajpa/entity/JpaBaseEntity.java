@@ -8,7 +8,6 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import java.time.LocalDateTime;
 
-// 순수 JPA 사용
 
 // 속성만 내려받아서 공유함
 @MappedSuperclass
@@ -19,6 +18,7 @@ public class JpaBaseEntity {
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
 
+    // 순수 JPA 사용
     @PrePersist
     public void prePersist() {
         LocalDateTime now = LocalDateTime.now();
