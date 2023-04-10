@@ -5,6 +5,7 @@ import com.study.datajpa.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,9 +31,18 @@ public class MemberController {
     }
 
     @GetMapping("/members")
-    public Page<Member> list(Pageable pageable) {
+    public Page<Member> list(@PageableDefault(size=5) Pageable pageable) {
+        // 글로벌 설정보다 우선권을 가짐
         Page<Member> page = memberRepository.findAll(pageable);
         return page;
+
+        // 페이징 정보가 둘 이상이면 접두사로 구분
+        /*
+         * @Qualifier("member") Pageable memberPageable,
+         * @Qualifier("order") Pageable orderPageable,
+         *
+         * localhost:8080/membersmember_page=0&order_page=1 이런식으로..
+        * */
     }
 
     @PostConstruct
