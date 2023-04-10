@@ -1,5 +1,6 @@
 package com.study.datajpa.controller;
 
+import com.study.datajpa.dto.MemberDto;
 import com.study.datajpa.entity.Member;
 import com.study.datajpa.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
@@ -31,10 +32,12 @@ public class MemberController {
     }
 
     @GetMapping("/members")
-    public Page<Member> list(@PageableDefault(size=5) Pageable pageable) {
+    public Page<MemberDto> list(@PageableDefault(size=5) Pageable pageable) {
         // 글로벌 설정보다 우선권을 가짐
         Page<Member> page = memberRepository.findAll(pageable);
-        return page;
+        // dto로 반환하기
+        return memberRepository.findAll(pageable)
+                .map(MemberDto::new);
 
         // 페이징 정보가 둘 이상이면 접두사로 구분
         /*
