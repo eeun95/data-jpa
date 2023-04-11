@@ -36,6 +36,7 @@ public class Item implements Persistable<String> {
     }
 
     // persistable 인터페이스를 가지고 있으면 isNew로 새로운 객체인지 판단
+    // (새로운 엔티티 확인 여부를 직접 구현)
     @Override
     public boolean isNew() {
         return createdDate == null;
